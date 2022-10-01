@@ -1,20 +1,7 @@
 #include<stdio.h>
-#include<string.h>
+#include<stdbool.h>
+#include "Book.h"
 
-
-
-struct Book
-{
-    int id;
-    char name[20];
-    char author[20];
-};
-
-
-void read();
-struct Book search();
-void add_book();
-void list();
 
 void list()
 {
@@ -38,26 +25,36 @@ void list()
     fclose (infile);
 };
 
-void add_book (struct Book book)
+bool check_exists(FILE *file, int id){
+
+    if (file == NULL)
+    {
+        fprintf(stderr, "\nError opened file\n");
+        return false;
+    };
+
+    struct Book repeated = search(id);
+
+    if (repeated.id == id)
+    {
+        return true;
+    }
+    return false;
+};
+
+
+void add (struct Book book)
 {
     FILE *outfile;
 
     // open file for writing
     outfile = fopen ("books.dat", "a+");
-    if (outfile == NULL)
-    {
-        fprintf(stderr, "\nError opened file\n");
-        return;
-    };
 
-    struct Book repeated = search(book.id);
-
-    printf("%d \n",  repeated.id);
-
-    if (repeated.id == book.id)
+    if (check_exists(outfile, book.id) == true)
     {
         printf("That ID already exists ... exiting");
         return;
+
     }
 
     // write struct to file
@@ -73,10 +70,51 @@ void add_book (struct Book book)
 
 };
 
+
+void remove_book(int id){
+
+    FILE *file, *file2;
+    int flag = 0;
+    struct Book input;
+
+    // Open person.dat for reading
+    file = fopen ("books.dat", "r");
+
+    if (check_exists(file, id) == false)
+    {
+        printf("Book not found with id %i", id);
+
+    }
+
+    file2 = fopen("temp.dat","wb+");
+
+	while(fread(&input,sizeof(struct Book),1,file))
+		{
+			if(input.id != id)
+            {
+				fwrite(&input,sizeof(struct Book),1, file2);
+            }
+            if(input.id == id)
+            {
+                flag = 1;
+            }
+        }
+        fclose(file);
+        fclose(file2);
+
+        if (flag == 0)
+           {
+            remove("data");
+			rename("temp.txt","project");
+            printf("Successfully deleted record");
+           }
+
+}
+
+
 struct Book search(int id){
     FILE *infile;
     struct Book input;
-
 
     // Open person.dat for reading
     infile = fopen ("books.dat", "r");
@@ -85,7 +123,7 @@ struct Book search(int id){
         fprintf(stderr, "\nError opening file\n");
         struct Book file = {0, "", ""};
         return file;
-    };
+    }
 
     while(fread(&input, sizeof(struct Book), 1, infile))
     {
@@ -110,12 +148,12 @@ void update(struct Book new_book)
     f = fopen ("books.dat", "rb+");
     struct Book input;
 
-    // check for existance of book
-    printf("Checking for the existance of a book id ...\n");
-    struct Book book = search(new_book.id);
-    if (book.id == 0){
+    if (check_exists(f, new_book.id) == false)
+    {
+        printf("Book doesn't exist \n");
         return;
     }
+
     printf("Updating book record \n");
 
     while(fread(&input,sizeof(struct Book),1,f))
@@ -126,25 +164,4 @@ void update(struct Book new_book)
             fwrite(&new_book,sizeof(struct Book),1,f);
         }
     }
-}
-
-int main (){
-
-    struct Book input1 = {1, "Clean Code", "Robert"};
-    struct Book input2 = {2, "Clean Coder", "Robert"};
-    struct Book input3 = {3, "Clean Architecture", "Robert"};
-
-    add_book(input1);
-    add_book(input2);
-    add_book(input3);
-    struct Book book = search(2);
-
-    printf("%i %s %s \n", book.id, book.name, book.author);
-    list();
-
-    struct Book input4 = {3, "Agile Scrum", "Robert"};
-    update(input4);
-    list();
-
-    return 0;
 }
