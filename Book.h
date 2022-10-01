@@ -20,7 +20,7 @@ struct Book
 /*
 Lists all the books. (Books are stored in a file).
 */
-void list();
+void list_books();
 
 /*
 Search a book by it's id.

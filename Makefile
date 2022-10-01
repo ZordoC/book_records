@@ -1,7 +1,7 @@
 
 
 clear-db:
-	rm books.dat;
+	rm *.dat;
 
 compile-records:
 	 gcc -Wall -Wextra records_v2.c -o records_v2;
@@ -15,5 +15,8 @@ compile-book:
 compile-main:
 	gcc -Wall -Wextra -c main.c
 
-compile: compile-book compile-main
-	gcc Book.c main.c
+compile-menu:
+	gcc -Wall -Wextra -c Menu.c
+
+compile: compile-book compile-menu compile-main
+	gcc Book.c Menu.c main.c

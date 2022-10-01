@@ -3,7 +3,7 @@
 #include "Book.h"
 
 
-void list()
+void list_books()
 {
     FILE *infile;
     struct Book input;
@@ -25,7 +25,7 @@ void list()
     fclose (infile);
 };
 
-bool check_exists(FILE *file, int id){
+bool book_exists(FILE *file, int id){
 
     if (file == NULL)
     {
@@ -50,9 +50,9 @@ void add (struct Book book)
     // open file for writing
     outfile = fopen ("books.dat", "a+");
 
-    if (check_exists(outfile, book.id) == true)
+    if (book_exists(outfile, book.id) == true)
     {
-        printf("That ID already exists ... exiting");
+        printf("That ID already exists.");
         return;
 
     }
@@ -61,9 +61,9 @@ void add (struct Book book)
     fwrite (&book, sizeof(struct Book), 1, outfile);
 
     if(&fwrite != 0)
-        printf("contents to file written successfully !\n");
+        printf("Succsess!\n");
     else
-        printf("error writing file !\n");
+        printf("Error writing file !\n");
 
     // close file
     fclose (outfile);
@@ -80,9 +80,9 @@ void remove_book(int id){
     // Open person.dat for reading
     file = fopen ("books.dat", "r");
 
-    if (check_exists(file, id) == false)
+    if (book_exists(file, id) == false)
     {
-        printf("Book not found with id %i", id);
+        printf("No book with id: %i \n", id);
 
     }
 
@@ -96,17 +96,22 @@ void remove_book(int id){
             }
             if(input.id == id)
             {
-                flag = 1;
+                flag = 0;
             }
         }
         fclose(file);
         fclose(file2);
 
         if (flag == 0)
+        {
+        remove("data");
+		rename("temp.dat","books.dat");
+        printf("Successfully deleted record.\n");
+        }
+           else
            {
-            remove("data");
-			rename("temp.txt","project");
-            printf("Successfully deleted record");
+            printf("ID doesn't exist \n");
+            remove("temp.txt");
            }
 
 }
@@ -128,12 +133,12 @@ struct Book search(int id){
     while(fread(&input, sizeof(struct Book), 1, infile))
     {
         if(input.id == id) {
-            printf("Book found !\n");
+            printf("Book found with id: %i!\n", id);
             return input;
             fclose (infile);
         }
     }
-    printf("Book not found !\n");
+    printf("No book with id: %i \n", id);
     fclose (infile);
     struct Book not_found = {0, "", ""};
     return not_found;
@@ -148,7 +153,7 @@ void update(struct Book new_book)
     f = fopen ("books.dat", "rb+");
     struct Book input;
 
-    if (check_exists(f, new_book.id) == false)
+    if (book_exists(f, new_book.id) == false)
     {
         printf("Book doesn't exist \n");
         return;
